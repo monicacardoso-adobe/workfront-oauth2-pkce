@@ -28,7 +28,7 @@ async function startOAuthFlow() {
   sessionStorage.setItem('code_verifier', codeVerifier);
 
   // Build URL
-  const authUrl = `https://monicacardoso.my.workfront.adobe.com/oauth2/authorize?response_type=code&client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&code_challenge=${encodeURIComponent(codeChallenge)}&code_challenge_method=S256`;
+  const authUrl = `https://monicacardoso.my.workfront.adobe.com/oauth2/consent?response_type=code&client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&code_challenge=${encodeURIComponent(codeChallenge)}&code_challenge_method=S256`;
 
   console.log("Redirecting to:", authUrl);
   window.location.href = authUrl;
