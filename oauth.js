@@ -28,7 +28,7 @@ function generatePKCE() {
   
   // OAuth2 authorization URL
   const clientId = '904cbf39b8fc23a1a7cbd6648dd09c10'; // Replace with your client ID
-  const redirectUri = 'https://monicacardoso.github.io/workfront-oauth2-pkce/callback.html'; // Set up GitHub Pages redirect URL
+  const redirectUri = 'https://monicacardoso-adobe.github.io/workfront-oauth2-pkce/callback.html'; // Set up GitHub Pages redirect URL
   const authEndpoint = 'https://monicacardoso.my.workfront.adobe.com/oauth2/authorize';
   const responseType = 'code';
   const codeChallengeMethod = 'S256';
