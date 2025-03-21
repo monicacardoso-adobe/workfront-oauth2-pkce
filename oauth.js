@@ -1,46 +1,32 @@
-// Function to generate a code verifier and challenge
-function generatePKCE() {
-    const code_verifier = generateRandomString(43); // Random string of at least 43 characters
-    const code_challenge = generateCodeChallenge(code_verifier);
-    return { code_verifier, code_challenge };
-  }
+async function generateCodeChallenge() {
+  const codeVerifier = generateRandomString(64);
+  const encoder = new TextEncoder();
+  const data = encoder.encode(codeVerifier);
+  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  const codeChallenge = btoa(String.fromCharCode.apply(null, hashArray))
+    .replace(/\+/g, '-')
+    .replace(/\//g, '_')
+    .replace(/=+$/, '');
+
+  sessionStorage.setItem('code_verifier', codeVerifier);
+  return codeChallenge;
+}
+
+function generateRandomString(length) {
+  const possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~';
+  return Array.from(crypto.getRandomValues(new Uint8Array(length)))
+    .map(x => possible[x % possible.length])
+    .join('');
+}
+
+async function startOAuthFlow() {
+  const codeChallenge = await generateCodeChallenge();
   
-  // Function to generate a random string
-  function generateRandomString(length) {
-    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~';
-    let randomString = '';
-    for (let i = 0; i < length; i++) {
-      randomString += characters.charAt(Math.floor(Math.random() * characters.length));
-    }
-    return randomString;
-  }
+  const clientId = '904cbf39b8fc23a1a7cbd6648dd09c10';
+  const redirectUri = 'https://monicacardoso-adobe.github.io/workfront-oauth2-pkce/callback.html';
   
-  // Function to generate the code challenge (SHA-256 hash of the code_verifier)
-  function generateCodeChallenge(code_verifier) {
-    const encoder = new TextEncoder();
-    const data = encoder.encode(code_verifier);
-    return crypto.subtle.digest('SHA-256', data).then(hash => {
-      let base64Url = btoa(String.fromCharCode.apply(null, new Uint8Array(hash)));
-      base64Url = base64Url.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
-      return base64Url;
-    });
-  }
-  
-  // OAuth2 authorization URL
-  const clientId = '904cbf39b8fc23a1a7cbd6648dd09c10'; // Replace with your client ID
-  const redirectUri = 'https://monicacardoso-adobe.github.io/workfront-oauth2-pkce/callback.html'; // Set up GitHub Pages redirect URL
-  const authEndpoint = 'https://monicacardoso.my.workfront.adobe.com/oauth2/authorize';
-  const responseType = 'code';
-  const codeChallengeMethod = 'S256';
-  
-  // Function to start the authorization flow
-  function startAuthorization() {
-    const { code_verifier, code_challenge } = generatePKCE();
-    sessionStorage.setItem('code_verifier', code_verifier); // Save code_verifier for later use
-  
-    const authorizationUrl = `${authEndpoint}?response_type=${responseType}&client_id=${clientId}&redirect_uri=${redirectUri}&code_challenge=${code_challenge}&code_challenge_method=${codeChallengeMethod}`;
-    window.location.href = authorizationUrl;
-  }
-  
-  document.getElementById('authorize-btn').addEventListener('click', startAuthorization);
-  
+  const authUrl = `https://monicacardoso.my.workfront.adobe.com/oauth2/authorize?response_type=code&client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&code_challenge=${codeChallenge}&code_challenge_method=S256`;
+
+  window.location.href = authUrl;
+}
